@@ -1,4 +1,4 @@
-name: Build and Release ParrotSec (Directly, without script)
+name: Build and Release ParrotSec PinePhone Pro
 
 on:
   schedule:
@@ -10,14 +10,13 @@ permissions:
 
 jobs:
   build:
-    # runs-on: ubuntu-latest
     runs-on: [self-hosted, label-C0]
 
     steps:
       - uses: actions/checkout@v4
         with:
           repository: commander-Z3R0/parrotsec-pinephonepro
-          path: mobails
+          path: parrot
 
       - name: Install dependencies (Docker, bmap-tools, qemu-user-static)
         run: |
@@ -32,13 +31,12 @@ jobs:
 
       - name: Generate tag
         id: tag
-        run: echo "tag_name=parrotsec-ppp-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+        run: echo "tag_name=parrotsec-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
 
-      - name: Build Parrotsec image for PinePhone Pro (directly)
+      - name: Build ParrotSec image for PinePhone Pro
         run: |
-          cd parrotsec-pinephonepro
+          cd parrot
 
-          # Define variables (adjust as needed)
           device="pinephonepro"
           environment="phosh"
           arch="arm64"
@@ -46,7 +44,7 @@ jobs:
           rootfs_file="rootfs-${arch}-${environment}-nonfree.tar.gz"
           installfs_file="installfs-${arch}.tar.gz"
 
-          # Clean up previous files (optional)
+          # Clean up previous files
           rm -f "${rootfs_file}" "${installfs_file}" "rootfs-${device}-${environment}.tar.gz"
 
           # Build rootfs
@@ -88,13 +86,13 @@ jobs:
             bmaptool create "${image_file}.img" > "${image_file}.img.bmap"
           fi
 
-      - name: Upload image as a release to parrotsec
+      - name: Upload image as a release to ParrotSec repo
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           repository: commander-Z3R0/parrotsec-pinephonepro
-          files: parrotsec-pinephonepro/parrotsec-ppp-phosh-*.img
+          files: parrot/parrotsec-pinephonepro-phosh-*.img
           tag_name: ${{ steps.tag.outputs.tag_name }}
           name: ParrotSec PinePhone Pro Image
-          body: "Parrot Sec image automatically generated from parrotsec-pinephonepro repository"
+          body: "ParrotSec image automatically generated for PinePhone Pro"
