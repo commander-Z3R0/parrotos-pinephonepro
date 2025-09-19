@@ -1,0 +1,100 @@
+name: Build and Release ParrotSec (Directly, without script)
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    # runs-on: ubuntu-latest
+    runs-on: [self-hosted, label-C0]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: commander-Z3R0/parrotsec-pinephonepro
+          path: mobails
+
+      - name: Install dependencies (Docker, bmap-tools, qemu-user-static)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bmap-tools qemu-user-static
+          if ! command -v docker &> /dev/null; then
+            echo "Docker is not installed, installing..."
+            curl -fsSL https://get.docker.com | sudo sh
+          else
+            echo "Docker is already installed, skipping installation."
+          fi
+
+      - name: Generate tag
+        id: tag
+        run: echo "tag_name=parrotsec-ppp-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+
+      - name: Build Parrotsec image for PinePhone Pro (directly)
+        run: |
+          cd parrotsec-pinephonepro
+
+          # Define variables (adjust as needed)
+          device="pinephonepro"
+          environment="phosh"
+          arch="arm64"
+          image_file="parrotsec-${device}-${environment}-${{ steps.tag.outputs.tag_name }}"
+          rootfs_file="rootfs-${arch}-${environment}-nonfree.tar.gz"
+          installfs_file="installfs-${arch}.tar.gz"
+
+          # Clean up previous files (optional)
+          rm -f "${rootfs_file}" "${installfs_file}" "rootfs-${device}-${environment}.tar.gz"
+
+          # Build rootfs
+          docker run --rm \
+            --device /dev/kvm \
+            -v "$PWD":/work \
+            -w /work \
+            --security-opt label=disable \
+            godebos/debos \
+            -t architecture:"${arch}" \
+            -t device:"${device}" \
+            -t environment:"${environment}" \
+            -t rootfs:"${rootfs_file}" \
+            -t nonfree:true \
+            --scratchsize=8G \
+            rootfs.yaml
+
+          # Build final image
+          docker run --rm \
+            --device /dev/kvm \
+            -v "$PWD":/work \
+            -w /work \
+            --security-opt label=disable \
+            godebos/debos \
+            -t architecture:"${arch}" \
+            -t device:"${device}" \
+            -t environment:"${environment}" \
+            -t rootfs:"${rootfs_file}" \
+            -t installfs:"${installfs_file}" \
+            -t image:"${image_file}" \
+            -t nonfree:true \
+            -t partitiontable:gpt \
+            -t filesystem:ext4 \
+            --scratchsize=8G \
+            image.yaml
+
+          # Generate bmap (optional)
+          if [ -f "${image_file}.img" ]; then
+            bmaptool create "${image_file}.img" > "${image_file}.img.bmap"
+          fi
+
+      - name: Upload image as a release to parrotsec
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          repository: commander-Z3R0/parrotsec-pinephonepro
+          files: parrotsec-pinephonepro/parrotsec-ppp-phosh-*.img
+          tag_name: ${{ steps.tag.outputs.tag_name }}
+          name: ParrotSec PinePhone Pro Image
+          body: "Parrot Sec image automatically generated from parrotsec-pinephonepro repository"
