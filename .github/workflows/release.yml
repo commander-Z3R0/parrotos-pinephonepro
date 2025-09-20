@@ -86,13 +86,13 @@ jobs:
             bmaptool create "${image_file}.img" > "${image_file}.img.bmap"
           fi
 
-      - name: Upload image as a release to ParrotSec repo
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          repository: commander-Z3R0/parrotsec-pinephonepro
-          files: parrot/parrotsec-pinephonepro-phosh-*.img
-          tag_name: ${{ steps.tag.outputs.tag_name }}
-          name: ParrotSec PinePhone Pro Image
-          body: "ParrotSec image automatically generated for PinePhone Pro"
+     # - name: Upload image as a release to ParrotSec repo
+     #   uses: softprops/action-gh-release@v1
+     #   env:
+     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     #   with:
+     #     repository: commander-Z3R0/parrotsec-pinephonepro
+     #     files: parrot/parrotsec-pinephonepro-phosh-*.img
+     #     tag_name: ${{ steps.tag.outputs.tag_name }}
+     #     name: ParrotSec PinePhone Pro Image
+     #     body: "ParrotSec image automatically generated for PinePhone Pro"
