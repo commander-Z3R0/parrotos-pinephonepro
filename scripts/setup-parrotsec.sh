@@ -1,8 +1,39 @@
 #!/bin/bash
 
-source scripts/scripts/run.sh
-source scripts/scripts/install_packages.sh
+# ==========================
+# Helpers
+# ==========================
 
+check_sudo() {
+    if [ "$(id -u)" -ne 0 ]; then
+        echo "Error: This script requires sudo privileges. Please run it with sudo." >&2
+        exit 1
+    fi
+}
+
+handle_error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+run() {
+    echo "Executing: $2"
+    eval "$1"
+    if [ $? -ne 0 ]; then
+        handle_error "Command failed: $2"
+    fi
+}
+
+install_packages() {
+    if [ $# -eq 0 ]; then
+        handle_error "No packages specified for installation."
+    fi
+    run "apt install -y $*" "Installing packages: $*"
+}
+
+# ==========================
+# Core setup
+# ==========================
 
 core() {
     local core_packages
@@ -20,10 +51,18 @@ core() {
     run "cp config/system/etc/os-release /etc/os-release" "Copying os-release"
     run "apt update" "Updating package lists"
     run "apt upgrade -y" "Upgrading packages"
-    if [ $(uname -m) == "aarch64" ]; then
+
+    if [ "$(uname -m)" == "aarch64" ]; then
         run "apt-mark hold broadcom-sta-dkms" "Blacklisting incompatible package broadcom-sta-dkms"
     fi
+
     run "apt install -y parrot-core" "Installing parrot-core"
 
     echo "[!] Core Edition packages installation completed successfully."
 }
+
+# ==========================
+# Entry point
+# ==========================
+check_sudo
+core
