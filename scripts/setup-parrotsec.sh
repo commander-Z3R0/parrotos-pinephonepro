@@ -61,7 +61,7 @@ core() {
         run "apt-mark hold broadcom-sta-dkms" "Blacklisting incompatible package broadcom-sta-dkms"
     fi
 
-    run "apt install -y parrot-core" "Installing parrot-core"
+#    run "apt install -y parrot-core" "Installing parrot-core"
 
     echo "[!] Core Edition packages installation completed successfully."
 }
