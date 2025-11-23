@@ -16,14 +16,14 @@ architecture: {{ $architecture }}
 
 actions:
 
-  - action: copy
-    source: files/parrot-archive-keyring_2024.12_all.deb
-    destination: /tmp/parrot-archive-keyring.deb
+  - action: overlay
+    source: files
+    destination: /tmp
 
   - action: run
-    description: Install parrot archive keyring from local deb
+    description: Install parrot archive keyring from local .deb
     chroot: true
-    command: dpkg -i /tmp/parrot-archive-keyring.deb
+    command: dpkg -i /tmp/parrot-archive-keyring_2024.12_all.deb
 
   - action: overlay
     source: apt/etc
