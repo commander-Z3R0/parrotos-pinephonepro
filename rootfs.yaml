@@ -15,6 +15,10 @@
 architecture: {{ $architecture }}
 
 actions:
+  - action: run
+    description: Import Parrot GPG keyring
+    command: curl -fsSL https://deb.parrot.sh/parrot/keyring.gpg | gpg --dearmor -o /usr/share/keyrings/parrot-archive-keyring.gpg
+
   - action: debootstrap
     suite: {{ $parrot_suite }}
     components:
