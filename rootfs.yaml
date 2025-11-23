@@ -20,14 +20,8 @@ actions:
     destination: /tmp
     
   - action: run
-    description: Create resolv.conf for DNS
-    chroot: false
-    command: |
-      mkdir -p /etc && echo 'nameserver 8.8.8.8' > /etc/resolv.conf
-
-  - action: run
     description: Install parrot archive keyring from local .deb
-    chroot: true
+    chroot: false
     command: dpkg -i /tmp/parrot-archive-keyring_2024.12_all.deb
 
   - action: overlay
