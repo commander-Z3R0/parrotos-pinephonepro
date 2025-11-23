@@ -19,6 +19,11 @@ actions:
   - action: overlay
     source: files
     destination: /tmp
+    
+  - action: run
+    description: Create resolv.conf for DNS
+    chroot: true
+    command: sh -c "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
 
   - action: run
     description: Install parrot archive keyring from local .deb
