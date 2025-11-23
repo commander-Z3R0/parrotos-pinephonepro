@@ -15,14 +15,13 @@
 architecture: {{ $architecture }}
 
 actions:
-
   - action: overlay
     source: files
     destination: /tmp
     
   - action: run
     description: Create resolv.conf for DNS
-    chroot: true
+    chroot: false
     command: |
       mkdir -p /etc && echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 
