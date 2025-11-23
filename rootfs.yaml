@@ -7,16 +7,16 @@
 {{- $nonfree := or .nonfree "false" -}}
 {{- $ssh := or .ssh "" -}}
 {{- $zram:= or .zram "false" -}}
-{{- $debian_suite := or .debian_suite "trixie" -}}
-{{- $suite := or .suite $debian_suite -}}
+{{- $parrot_suite := or .parrot_suite "lory" -}}
+{{- $suite := or .suite $parrot_suite -}}
 {{- $rootfs := or .rootfs "rootfs.tar.gz" }}
-{{- $mirror := or .mirror "http://deb.debian.org/debian" -}}
+{{- $mirror := or .mirror "https://deb.parrot.sh/parrot" -}}
 
 architecture: {{ $architecture }}
 
 actions:
   - action: debootstrap
-    suite: {{ $debian_suite }}
+    suite: {{ $parrot_suite }}
     components:
       - main
 {{ if eq $contrib "true" }}
@@ -29,11 +29,11 @@ actions:
     variant: minbase
 
   - action: apt
-    description: Install mobian-archive-keyring
+    description: Install parrot-archive-keyring
     recommends: false
     packages:
       - ca-certificates
-      - mobian-archive-keyring
+      - parrot-archive-keyring
 
   - action: overlay
     description: Enable resize of root partition
@@ -41,9 +41,9 @@ actions:
     destination: /etc/repart.d/
 
   - action: run
-    description: Setup Mobian repository
+    description: Setup Parrot repository
     chroot: true
-    script: scripts/setup-apt.sh {{ $debian_suite }} {{ $suite }}
+    script: scripts/setup-apt.sh {{ $parrot_suite }} {{ $suite }}
 
 {{ if eq $nonfree "true" }}
   - action: run

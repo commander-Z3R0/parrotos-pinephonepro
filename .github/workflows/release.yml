@@ -36,11 +36,11 @@ jobs:
       - name: Build ParrotSec image for PinePhone Pro
         run: |
           cd parrot
-
+          
           device="pinephonepro"
           environment="phosh"
           arch="arm64"
-          image_file="parrotsec-${device}-${environment}-${{ steps.tag.outputs.tag_name }}"
+          image_file="parrotsec-${device}-${environment}"
           rootfs_file="rootfs-${arch}-${environment}-nonfree.tar.gz"
           installfs_file="installfs-${arch}.tar.gz"
 
@@ -86,13 +86,50 @@ jobs:
             bmaptool create "${image_file}.img" > "${image_file}.img.bmap"
           fi
 
-     # - name: Upload image as a release to ParrotSec repo
-     #   uses: softprops/action-gh-release@v1
-     #   env:
-     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     #   with:
-     #     repository: commander-Z3R0/parrotsec-pinephonepro
-     #     files: parrot/parrotsec-pinephonepro-phosh-*.img
-     #     tag_name: ${{ steps.tag.outputs.tag_name }}
-     #     name: ParrotSec PinePhone Pro Image
-     #     body: "ParrotSec image automatically generated for PinePhone Pro"
+
+
+      - name: Upload image to GoFile
+        env:
+          GOFILE_TOKEN: ${{ secrets.GOFILE_TOKEN }}
+          GOFILE_FOLDER_ID: ${{ secrets.GOFILE_FOLDER_ID }}
+        run: |
+          cd parrot
+          device="pinephonepro"
+          environment="phosh"
+          image_file="parrotsec-${device}-${environment}"
+          FILE_PATH="${image_file}.img"
+
+          if [ ! -f "$FILE_PATH" ]; then
+            echo "❌ File not found: $FILE_PATH"
+            exit 1
+          fi
+
+          echo "📡 Getting server GoFile..."
+          SERVER_JSON=$(curl -s "https://api.gofile.io/servers")
+          SERVER=$(echo "$SERVER_JSON" | jq -r '.data.servers[0].name')
+
+          if [ -z "$SERVER" ] || [ "$SERVER" == "null" ]; then
+            echo "❌ Error getting server: $SERVER_JSON"
+            exit 1
+          fi
+
+          echo "🖥️ Server selected: $SERVER"
+          echo "📤 Uploading file to GoFile..."
+
+          RESPONSE=$(curl -s -X POST "https://${SERVER}.gofile.io/uploadFile" \
+            -H "Authorization: Bearer $GOFILE_TOKEN" \
+            -F "file=@$FILE_PATH" \
+            -F "folderId=$GOFILE_FOLDER_ID")
+
+          echo "📦 Response completed:"
+          echo "$RESPONSE"
+
+          LINK=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
+          if [ -z "$LINK" ] || [ "$LINK" == "null" ]; then
+            echo "❌ Error on a upload"
+            exit 1
+          fi
+
+          echo "✅ File uploaded correctly!"
+          echo "🔗 Public link: $LINK"
+          echo "link=$LINK" >> $GITHUB_OUTPUT
