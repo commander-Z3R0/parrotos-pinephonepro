@@ -29,11 +29,11 @@ actions:
     mirror: {{ $mirror }}
     variant: minbase
 
-  - action: apt
-    description: Install mobian-archive-keyring
-    recommends: false
-    packages:
-      - ca-certificates
+#  - action: apt
+#    description: Install mobian-archive-keyring
+#    recommends: false
+#    packages:
+#      - ca-certificates
 #      - mobian-archive-keyring
 
   - action: overlay
