@@ -11,9 +11,6 @@ actions:
 # Replace pinephonepro-support
       - linux-image-arm64
       - linux-headers-arm64
-      - linux-firmware
-      - firmware-rockchip
-      - rkbin
 # Audio PinePhone Pro
       - firmware-sof-signed
       - rtkit
