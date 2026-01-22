@@ -22,6 +22,7 @@ jobs:
       - name: Build custom debos image (with cryptsetup)
         run: |
           docker build \
+            --build-arg DEBIAN_FRONTEND=noninteractive \
             -t parrotsec/debos-cryptsetup \
             -f Docker/Dockerfile.debos \
             .
@@ -40,6 +41,7 @@ jobs:
             --device /dev/kvm \
             -v "$PWD":/work \
             -w /work \
+            -e DEBIAN_FRONTEND=noninteractive \
             parrotsec/debos-cryptsetup \
             debos rootfs.yaml \
             --scratchsize=8G \
@@ -47,14 +49,14 @@ jobs:
             -t device:${device} \
             -t environment:${environment} \
             -t rootfs:${rootfs_file} \
-            -t nonfree:true \
-            --no-check-gpg
+            -t nonfree:true
 
           docker run --rm \
             --privileged \
             --device /dev/kvm \
             -v "$PWD":/work \
             -w /work \
+            -e DEBIAN_FRONTEND=noninteractive \
             parrotsec/debos-cryptsetup \
             debos image.yaml \
             --scratchsize=10G \
