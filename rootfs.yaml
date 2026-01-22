@@ -42,7 +42,7 @@ actions:
     destination: /etc/repart.d/
 
   - action: run
-    description: Setup Mobian repository
+    description: Setup Parrotsec repository
     chroot: true
     script: scripts/setup-apt.sh {{ $debian_suite }} {{ $suite }}
 
