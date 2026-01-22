@@ -50,7 +50,7 @@ jobs:
             -t environment:${environment} \
             -t rootfs:${rootfs_file} \
             -t nonfree:true \
-            -t debian_suite:lory
+            -t debian_suite:echo
 
           docker run --rm \
             --privileged \
