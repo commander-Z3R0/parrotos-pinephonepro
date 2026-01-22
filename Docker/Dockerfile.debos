@@ -1,21 +1,20 @@
 FROM parrotsec/core
 
-RUN apt-get update && \
-    apt-get install -y \
-        debos \
-        qemu-user-static \
-        binfmt-support \
-        git \
-        rsync \
-        squashfs-tools \
-        dosfstools \
-        cryptsetup \
-        cryptsetup-bin \
-        util-linux \
-        e2fsprogs \
-        kmod \
-        bmap-tools && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    debos \
+    qemu-user-static \
+    binfmt-support \
+    cryptsetup \
+    cryptsetup-bin \
+    util-linux \
+    e2fsprogs \
+    kmod \
+    bmap-tools \
+    wget \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN update-binfmts --enable
+RUN wget -O /tmp/parrot-archive-keyring_2024.12_all.deb \
+    https://deb.parrot.sh/parrot/pool/main/p/parrot-archive-keyring/parrot-archive-keyring_2024.12_all.deb \
+    && dpkg -i /tmp/parrot-archive-keyring_2024.12_all.deb \
+    && rm /tmp/parrot-archive-keyring_2024.12_all.deb

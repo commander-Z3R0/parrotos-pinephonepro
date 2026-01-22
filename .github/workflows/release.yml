@@ -27,10 +27,6 @@ jobs:
             -f Docker/Dockerfile.debos \
             .
 
-      - name: Download Parrot keyring to workspace
-        run: |
-          wget -O parrot-keyring.deb https://deb.parrot.sh/parrot/pool/main/p/parrot-archive-keyring/parrot-archive-keyring_2024.12_all.deb
-
       - name: Build encrypted image
         run: |
           device="pinephonepro"
