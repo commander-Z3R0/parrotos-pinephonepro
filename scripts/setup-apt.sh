@@ -2,14 +2,27 @@
 DEBIAN_SUITE=$1
 SUITE=$2
 
-# Configuration Parrot repo (NO Mobian)
+# Parrot repos (prioridad 700)
 cat > /etc/apt/sources.list.d/parrot.list << EOF
 deb https://deb.parrot.sh/parrot ${SUITE} main contrib non-free non-free-firmware
 EOF
 
-# Priority Parrot
-cat > /etc/apt/preferences.d/00-parrot-priority << EOF
+# Mobian repos (priority 600 - Parrot)
+cat > /etc/apt/sources.list.d/mobian.sources << EOF
+Types: deb
+URIs: https://repo.mobian.org/debian
+Suites: ${DEBIAN_SUITE}
+Components: main
+Signed-By: /usr/share/keyrings/mobian-archive-keyring.gpg
+EOF
+
+# Priority: Parrot > Mobian
+cat > /etc/apt/preferences.d/99-parrot-priority << EOF
 Package: *
-Pin: release o=Parrot
+Pin: origin deb.parrot.sh
 Pin-Priority: 700
+
+Package: *
+Pin: origin repo.mobian.org  
+Pin-Priority: 600
 EOF
