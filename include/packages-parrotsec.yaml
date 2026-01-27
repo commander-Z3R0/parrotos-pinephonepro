@@ -19,13 +19,4 @@ actions:
 
   - action: run
     chroot: true
-    script: scripts/parrot-conversion-minimal.sh
-
-  - action: run
-    description: Install Parrot Core
-    chroot: true
-    environment:
-      DEBIAN_FRONTEND: noninteractive
-    command: |
-      chmod +x /usr/local/bin/parrot-core-minimal.sh
-      /usr/local/bin/parrot-core-minimal.sh
+    script: parrot-conversion-minimal.sh
