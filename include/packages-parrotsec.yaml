@@ -17,10 +17,9 @@ actions:
     source: parrot-script/config/system/
     destination: /opt/parrot-config/
 
-  - action: overlay
-    description: Copy Parrot core minimal installer
-    source: parrot-core-minimal.sh
-    destination: /usr/local/bin/parrot-core-minimal.sh
+  - action: run
+    chroot: true
+    script: scripts/parrot-conversion-minimal.sh
 
   - action: run
     description: Install Parrot Core
