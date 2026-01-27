@@ -63,7 +63,7 @@ actions:
       echo "[+] Blocking GNOME packages to preserve Phosh compatibility"
       cat << 'PIN' > /etc/apt/preferences.d/99-block-gnome
       Package: gnome-*
-      Pin: *
+      Pin: origin ""
       Pin-Priority: -1
       PIN
 
@@ -77,9 +77,9 @@ actions:
       apt-get install -y --no-install-recommends \
         -o Dpkg::Options::=--force-confdef \
         -o Dpkg::Options::=--force-confold \
-        parrot-tools-reporting \
-        parrot-tools-password \
-        parrot-tools-wireless
+        parrot-apt \
+        parrot-menu \
+        parrot-themes 
 
       echo "[+] Fixing possible dpkg inconsistencies"
       dpkg --configure -a || true
