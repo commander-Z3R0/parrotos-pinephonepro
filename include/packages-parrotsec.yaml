@@ -4,7 +4,7 @@ architecture: {{ $architecture }}
 
 actions:
   - action: apt
-    description: Install Parrot base dependencies
+    description: Install base dependencies required for Parrot bootstrap
     recommends: false
     packages:
       - ca-certificates
@@ -12,11 +12,81 @@ actions:
       - gnupg
       - apt-transport-https
 
-  - action: overlay
-    description: Copy Parrot APT configuration
-    source: parrot-script/config/system/
-    destination: /opt/parrot-config/
-
+  # NOTE:
+  # The Parrot conversion script is executed inline using "bash -s".
+  # This avoids copying build-only scripts into the final root filesystem
+  # and prevents leftover binaries inside the image.
   - action: run
+    description: Convert Mobian base into Parrot core (minimal, inline execution)
     chroot: true
-    script: parrot-conversion-minimal.sh
+    command: |
+      bash -s <<'EOF'
+      set -e
+      export DEBIAN_FRONTEND=noninteractive
+
+      echo "[+] Blocking service startup during package installation"
+      cat << 'POLICY' > /usr/sbin/policy-rc.d
+      #!/bin/sh
+      exit 101
+      POLICY
+      chmod +x /usr/sbin/policy-rc.d
+
+      echo "[+] Installing Parrot archive keyring"
+      wget -q https://deb.parrot.sh/parrot/pool/main/p/parrot-archive-keyring/parrot-archive-keyring_2024.12_all.deb
+      apt-get install -y ./parrot-archive-keyring_2024.12_all.deb
+      rm -f parrot-archive-keyring_2024.12_all.deb
+
+      echo "[+] Removing duplicate Mobian source list (if present)"
+      rm -f /etc/apt/sources.list.d/mobian.list || true
+
+      echo "[+] Adding Parrot repositories (echo)"
+      cat << 'APT' > /etc/apt/sources.list.d/parrot.list
+      deb https://deb.parrot.sh/parrot echo main contrib non-free non-free-firmware
+      deb https://deb.parrot.sh/parrot echo-security main contrib non-free non-free-firmware
+      deb https://deb.parrot.sh/parrot echo-backports main contrib non-free non-free-firmware
+      APT
+
+      echo "[+] Configuring APT pinning (Mobian preferred over Parrot)"
+      cat << 'PIN' > /etc/apt/preferences.d/00-mobian
+      Package: *
+      Pin: origin repo.mobian.org
+      Pin-Priority: 900
+      PIN
+
+      echo "[+] Allowing Parrot packages with lower priority (tools only)"
+      cat << 'PIN' > /etc/apt/preferences.d/10-parrot
+      Package: parrot-*
+      Pin: origin deb.parrot.sh
+      Pin-Priority: 650
+      PIN
+
+      echo "[+] Blocking GNOME packages to preserve Phosh compatibility"
+      cat << 'PIN' > /etc/apt/preferences.d/99-block-gnome
+      Package: gnome-*
+      Pin: *
+      Pin-Priority: -1
+      PIN
+
+      echo "[+] Updating APT metadata"
+      apt-get update
+
+      echo "[+] Holding sensitive packages"
+      apt-mark hold apparmor apparmor-profiles apparmor-profiles-extra || true
+
+      echo "[+] Installing Parrot security tools (no recommends)"
+      apt-get install -y --no-install-recommends \
+        -o Dpkg::Options::=--force-confdef \
+        -o Dpkg::Options::=--force-confold \
+        parrot-tools-reporting \
+        parrot-tools-password \
+        parrot-tools-wireless
+
+      echo "[+] Fixing possible dpkg inconsistencies"
+      dpkg --configure -a || true
+      apt-get -f install -y || true
+
+      echo "[+] Removing policy-rc.d"
+      rm -f /usr/sbin/policy-rc.d
+
+      echo "[+] Parrot core minimal conversion completed"
+      EOF
