@@ -103,7 +103,7 @@ actions:
  
   - action: overlay
     description: Replace Mobian Plymouth logo with custom Parrot logo
-    source: usr/share/plymouth/themes/mobian/logo.png
+    source: parrot-script/usr/share/plymouth/themes/mobian/logo.png
     destination: /usr/share/plymouth/themes/mobian/logo.png
     
   - action: run
