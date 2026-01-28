@@ -76,7 +76,10 @@ actions:
         -o Dpkg::Options::=--force-confdef \
         -o Dpkg::Options::=--force-confold \
         parrot-menu \
-        parrot-themes
+        parrot-themes\
+        parrot-interface-common \
+        ara-icon-theme \
+        hicolor-icon-theme
 
       dpkg --configure -a || true
       apt-get -f install -y || true
