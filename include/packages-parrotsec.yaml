@@ -11,6 +11,7 @@ actions:
       - wget
       - gnupg
       - apt-transport-https
+      - rsync
 
   # ------------------------------------------------------------
   # Parrot conversion (BUILD-ONLY)
@@ -77,7 +78,6 @@ actions:
         -o Dpkg::Options::=--force-confold \
         parrot-menu \
         parrot-themes\
-        parrot-interface-common \
         ara-icon-theme \
         hicolor-icon-theme
 
