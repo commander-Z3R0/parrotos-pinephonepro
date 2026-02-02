@@ -1,4 +1,4 @@
-name: Build ParrotOS PinePhone Pro (Not Encrypted)
+name: Build Parrot OS PinePhone Pro
 on:
   workflow_dispatch:
 
